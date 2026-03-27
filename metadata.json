@@ -1,0 +1,5 @@
+{
+  "name": "Cronos Inventory Tracker",
+  "description": "A simple application to track Cronos tag inventory, record daily usage, and generate reorder reports.",
+  "requestFramePermissions": []
+}
