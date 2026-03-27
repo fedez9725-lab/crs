@@ -1,5 +1,5 @@
 {
-  "name": "Cronos Inventory Tracker",
-  "description": "A simple application to track Cronos tag inventory, record daily usage, and generate reorder reports.",
+  "name": "SDA inventory GTW",
+  "description": "A comprehensive tool for tracking SDA tags, warehouse stock levels, and generating detailed logistics reports via email.",
   "requestFramePermissions": []
 }
