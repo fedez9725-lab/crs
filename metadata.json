@@ -1,5 +1,5 @@
 {
-  "name": "SDA inventory GTW",
+  "name": "SDA GTW",
   "description": "A comprehensive tool for tracking SDA tags, warehouse stock levels, and generating detailed logistics reports via email.",
   "requestFramePermissions": []
 }

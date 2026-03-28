@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Mail, RefreshCcw, Save, AlertTriangle, CheckCircle2, History, LayoutDashboard, Box, Truck } from 'lucide-react';
+import { Mail, RefreshCcw, Save, AlertTriangle, CheckCircle2, History, LayoutDashboard, Box, Truck, Copy, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface TagItem {
@@ -40,7 +40,7 @@ export default function App() {
   const [giacenze, setGiacenze] = useState({
     noDataEntry: 0,
     noDispacciato: 0,
-    disquidi: 0,
+    disguidi: 0,
     mxp: 0,
     linate: 0,
     francia: 0,
@@ -49,6 +49,7 @@ export default function App() {
   const [history, setHistory] = useState<{ date: string; usage: Record<string, number>; ipcCaricati: number }[]>([]);
   const [activeTab, setActiveTab] = useState<'cartellini' | 'complessivo' | 'giacenze'>('cartellini');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [reportContent, setReportContent] = useState<{ subject: string; body: string } | null>(null);
 
   useEffect(() => {
     const savedTags = localStorage.getItem('sda_tags');
@@ -116,7 +117,7 @@ export default function App() {
       setGiacenze({
         noDataEntry: 0,
         noDispacciato: 0,
-        disquidi: 0,
+        disguidi: 0,
         mxp: 0,
         linate: 0,
         francia: 0,
@@ -156,7 +157,7 @@ export default function App() {
       body += `Numero IPC Caricati: ${ipcCaricati}\n\n`;
       body += `Numero di bancali non passati al data entry: ${giacenze.noDataEntry}\n`;
       body += `Numero di gabbie di prodotto non dispacciato: ${giacenze.noDispacciato}\n`;
-      body += `Numero bancali disquidi: ${giacenze.disquidi}\n`;
+      body += `Numero bancali disguidi: ${giacenze.disguidi}\n`;
       body += `Numero di bancali in giacenza non partiti prodotto per MXP: ${giacenze.mxp}\n`;
       body += `Numero di bancali in giacenza non partiti prodotto per LINATE: ${giacenze.linate}\n`;
       body += `Numero di bancali in giacenza non partiti prodotto per FRANCIA: ${giacenze.francia}\n`;
@@ -168,8 +169,15 @@ export default function App() {
     else if (activeTab === 'complessivo') subject = `Inventario Complessivo SDA ${date}`;
     else subject = `Giacenze Merce SDA ${date}`;
 
+    setReportContent({ subject, body });
+
     const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoLink;
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    alert('Copiato negli appunti!');
   };
 
   if (!isLoaded) return null;
@@ -184,7 +192,7 @@ export default function App() {
               <span className="text-white font-bold text-2xl tracking-tighter">SDA</span>
             </div>
             <div>
-              <h1 className="text-3xl font-light tracking-tight italic font-serif">inventory GTW</h1>
+              <h1 className="text-3xl font-light tracking-tight italic font-serif">GTW</h1>
               <p className="text-sm text-[#1A1A1A]/50 mt-0.5 uppercase tracking-widest">Sistema di Monitoraggio Logistico</p>
             </div>
           </div>
@@ -367,7 +375,7 @@ export default function App() {
                   {[
                     { label: 'Bancali non passati al data entry', key: 'noDataEntry' },
                     { label: 'Gabbie di prodotto non dispacciato', key: 'noDispacciato' },
-                    { label: 'Bancali disquidi', key: 'disquidi' },
+                    { label: 'Bancali disguidi', key: 'disguidi' },
                     { label: 'Giacenza non partiti per MXP', key: 'mxp' },
                     { label: 'Giacenza non partiti per LINATE', key: 'linate' },
                     { label: 'Giacenza non partiti per FRANCIA', key: 'francia' },
@@ -402,6 +410,70 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Report Modal */}
+      <AnimatePresence>
+        {reportContent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-[#1A1A1A]/40 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]"
+            >
+              <div className="p-6 border-b border-[#1A1A1A]/10 flex justify-between items-center">
+                <h3 className="text-xl font-serif italic">Report Generato</h3>
+                <button onClick={() => setReportContent(null)} className="p-2 hover:bg-[#1A1A1A]/5 rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+                <div className="mb-6">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A]/40 mb-2">Oggetto Email</p>
+                  <div className="p-4 bg-[#1A1A1A]/5 rounded-xl text-sm font-medium flex justify-between items-center gap-4">
+                    <span className="truncate">{reportContent.subject}</span>
+                    <button onClick={() => copyToClipboard(reportContent.subject)} className="shrink-0 p-2 hover:bg-[#1A1A1A]/10 rounded-lg transition-colors text-[#F27D26]" title="Copia Oggetto">
+                      <Copy size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#1A1A1A]/40 mb-2">Corpo Email</p>
+                  <div className="relative">
+                    <pre className="p-6 bg-[#1A1A1A]/5 rounded-2xl text-sm font-sans whitespace-pre-wrap leading-relaxed">
+                      {reportContent.body}
+                    </pre>
+                    <button 
+                      onClick={() => copyToClipboard(reportContent.body)} 
+                      className="absolute top-4 right-4 p-3 bg-white border border-[#1A1A1A]/10 rounded-xl shadow-sm hover:shadow-md transition-all text-[#F27D26]"
+                      title="Copia Tutto il Testo"
+                    >
+                      <Copy size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 bg-[#1A1A1A]/5 flex justify-end gap-4">
+                <button 
+                  onClick={() => setReportContent(null)}
+                  className="px-6 py-3 text-sm font-bold uppercase tracking-widest text-[#1A1A1A]/60 hover:text-[#1A1A1A] transition-colors"
+                >
+                  Chiudi
+                </button>
+                <button 
+                  onClick={() => {
+                    const mailtoLink = `mailto:?subject=${encodeURIComponent(reportContent.subject)}&body=${encodeURIComponent(reportContent.body)}`;
+                    window.location.href = mailtoLink;
+                  }}
+                  className="px-8 py-3 bg-[#F27D26] text-white rounded-full text-sm font-bold uppercase tracking-widest hover:bg-[#D96A1B] transition-colors shadow-lg shadow-[#F27D26]/20"
+                >
+                  Apri Client Email
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
